@@ -21,7 +21,7 @@ const thoughtController = {
 
 //Get Thought by _id
     getThoughtById({params}, res) {
-      Thought.findOne({ _id: params.id })
+      Thought.findOne({ _id: params.thoughtId })
           .populate({
               path: "reactions",
               select: "-__v",
@@ -38,7 +38,6 @@ const thoughtController = {
 
     // add thought to this User
     addThought({ params, body }, res) {
-    console.log(body);
     Thought.create(body)
         .then(({ _id }) => {
         return User.findOneAndUpdate(
@@ -59,7 +58,7 @@ const thoughtController = {
 
     // update thought by id
     updateThought({ params, body }, res) {
-        Thought.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
+        Thought.findOneAndUpdate({ _id: params.thoughtId }, body, { new: true, runValidators: true })
         .then(dbThoughtData => {
             if (!dbThoughtData) {
             res.status(404).json({ message: 'No thought found with this id!' });
@@ -73,9 +72,9 @@ const thoughtController = {
   // add reaction to thought
   addReaction({ params, body }, res) {
     Thought.findOneAndUpdate(
-      { _id: params.id },
+      { _id: params.thoughtId },
       { $push: { reaction: body } },
-      { new: true, runValidators: true }
+      { new: true}
     )
       .then(dbThoughtData => {
         if (!dbThoughtData) {
@@ -89,18 +88,18 @@ const thoughtController = {
 
   // remove thought
   removeThought({ params }, res) {
-    Thought.findOneAndDelete({ _id: params.id })
+    Thought.findOneAndDelete({ _id: params.thoughtId })
     .then(dbThoughtData => res.json(dbThoughtData))
     .catch(err => res.json(err))
   },
   // remove reaction
   removeReaction({ params }, res) {
-    User.findOneAndUpdate(
-    { _id: params.userId },
+    Thought.findOneAndUpdate(
+    { _id: params.thoughtId },
     { $pull: { reactions: params.id } } ,
     { new: true }
     )
-    .then(dbUserData => res.json(dbUserData))
+    .then(dbThoughtData => res.json(dbThoughtData))
     .catch(err => res.json(err));
   }
 };
